@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mind Reader Number Guessing Game</title>
+
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, sans-serif;
+        background-color: #f4f7fb;
+        color: #333;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        transition: background 0.6s ease, color 0.6s ease;
+    }
+
+    /* ===== GLITCH STAGES ===== */
+
+    .glitch-1 {
+        background-image:
+            repeating-linear-gradient(
+                0deg,
+                rgba(0,0,0,0.03),
+                rgba(0,0,0,0.03) 1px,
+                transparent 1px,
+                transparent 3px
+            );
+    }
+
+    .glitch-2 {
+        background-image:
+            repeating-linear-gradient(
+                90deg,
+                rgba(0,0,0,0.08),
+                rgba(0,0,0,0.08) 2px,
+                transparent 2px,
+                transparent 5px
+            ),
+            repeating-linear-gradient(
+                0deg,
+                rgba(0,0,0,0.06),
+                rgba(0,0,0,0.06) 2px,
+                transparent 2px,
+                transparent 6px
+            );
+    }
+
+    .glitch-3 {
+        background-image:
+            repeating-linear-gradient(
+                0deg,
+                rgba(0,0,0,0.15),
+                rgba(0,0,0,0.15) 4px,
+                transparent 4px,
+                transparent 8px
+            ),
+            repeating-linear-gradient(
+                90deg,
+                rgba(0,0,0,0.15),
+                rgba(0,0,0,0.15) 4px,
+                transparent 4px,
+                transparent 8px
+            );
+    }
+
+    .glitch-max {
+        background-color: #111;
+        color: #eee;
+        background-image:
+            repeating-linear-gradient(
+                0deg,
+                rgba(255,255,255,0.2),
+                rgba(255,255,255,0.2) 6px,
+                transparent 6px,
+                transparent 12px
+            ),
+            repeating-linear-gradient(
+                90deg,
+                rgba(255,255,255,0.2),
+                rgba(255,255,255,0.2) 6px,
+                transparent 6px,
+                transparent 12px
+            );
+    }
+
+    /* ===== GAME UI ===== */
+
+    .game-container {
+        background: white;
+        padding: 30px;
+        width: 400px;
+        border-radius: 10px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        text-align: center;
+    }
+
+    h1 {
+        margin-top: 0;
+        color: #2c3e50;
+    }
+
+    select, input {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+        font-size: 16px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
+
+    button {
+        padding: 10px 20px;
+        font-size: 16px;
+        border: none;
+        border-radius: 5px;
+        background-color: #3498db;
+        color: white;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+
+    button:hover {
+        background-color: #2980b9;
+    }
+
+    #feedback {
+        margin-top: 15px;
+        font-weight: bold;
+    }
+
+    .success { color: green; }
+    .error { color: red; }
+    .warning { color: orange; }
+    .info { color: #555; }
+
+    .footer-link {
+        margin-top: 20px;
+        display: block;
+        font-size: 14px;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="game-container">
+    <h1>🤖 Mind Reader</h1>
+    <p>I’m thinking of a number… can you guess it?</p>
+
+    <label for="difficulty">Choose difficulty:</label>
+    <select id="difficulty">
+        <option value="10">Easy (1–10)</option>
+        <option value="50">Medium (1–50)</option>
+        <option value="100" selected>Hard (1–100)</option>
+    </select>
+
+    <input type="number" id="guessInput" placeholder="Enter your guess">
+
+    <button onclick="makeGuess()">Guess</button>
+    <button onclick="resetGame()">Restart</button>
+
+    <p id="feedback" class="info"></p>
+    <p id="attempts" class="info"></p>
+
+</div>
+
+<script>
+    let maxNumber = 100;
+    let secretNumber = Math.floor(Math.random() * maxNumber) + 1;
+    let attempts = 0;
+    let maxAttempts = 10;
+
+    document.getElementById("difficulty").addEventListener("change", function () {
+        maxNumber = parseInt(this.value);
+        resetGame();
+    });
+
+    function makeGuess() {
+        const guess = Number(document.getElementById("guessInput").value);
+        const feedback = document.getElementById("feedback");
+
+        attempts++;
+
+        if (!guess || guess < 1 || guess > maxNumber) {
+            feedback.textContent = `Please enter a number between 1 and ${maxNumber}.`;
+            feedback.className = "warning";
+            attempts--;
+            return;
+        }
+
+        if (guess === secretNumber) {
+            feedback.textContent = `🎉 Correct! You guessed it in ${attempts} tries.`;
+            feedback.className = "success";
+            disableInput();
+        } else if (attempts >= maxAttempts) {
+            feedback.textContent = `💀 Game Over! The number was ${secretNumber}.`;
+            feedback.className = "error";
+            disableInput();
+        } else if (guess < secretNumber) {
+            feedback.textContent = "Too low! Try again.";
+            feedback.className = "error";
+        } else {
+            feedback.textContent = "Too high! Try again.";
+            feedback.className = "error";
+        }
+
+        document.getElementById("attempts").textContent =
+            `Attempts: ${attempts} / ${maxAttempts}`;
+
+        updateGlitchBackground();
+    }
+
+    function updateGlitchBackground() {
+        document.body.className = "";
+
+        if (attempts >= 10) {
+            document.body.classList.add("glitch-max");
+        } else if (attempts >= 7) {
+            document.body.classList.add("glitch-3");
+        } else if (attempts >= 4) {
+            document.body.classList.add("glitch-2");
+        } else if (attempts >= 2) {
+            document.body.classList.add("glitch-1");
+        }
+    }
+
+    function resetGame() {
+        secretNumber = Math.floor(Math.random() * maxNumber) + 1;
+        attempts = 0;
+        document.getElementById("guessInput").value = "";
+        document.getElementById("feedback").textContent = "";
+        document.getElementById("attempts").textContent = "";
+        document.getElementById("guessInput").disabled = false;
+        document.body.className = "";
+    }
+
+    function disableInput() {
+        document.getElementById("guessInput").disabled = true;
+    }
+</script>
+
+</body>
+</html>
